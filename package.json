@@ -1,0 +1,28 @@
+{
+  "name": "alpha-warrior",
+  "version": "2.0.0",
+  "description": "Intent-First Trust Layer — Secure AI Agent with ArmorIQ integration for Claw & Shield Hackathon",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "dashboard": "node src/dashboard/server.js",
+    "demo:attack": "node src/attacks/demo.js",
+    "test": "node src/tests/run.js"
+  },
+  "dependencies": {
+    "@slack/bolt": "^3.18.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.3",
+    "jsonwebtoken": "^9.0.2",
+    "node-fetch": "^3.3.2",
+    "ws": "^8.16.0",
+    "chalk": "^5.3.0",
+    "ora": "^8.0.1",
+    "crypto": "^1.0.1"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}
