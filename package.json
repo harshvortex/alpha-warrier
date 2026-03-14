@@ -6,8 +6,8 @@
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
-    "prod": "concurrently \"PYTHONPATH=./SentinelLayer python3 -m uvicorn backend.main:app --port 8000 --host 0.0.0.0\" \"node src/index.js\"",
-    "build": "python3 -m pip install -r requirements.txt",
+    "prod": "concurrently \"PYTHONPATH=./SentinelLayer python -m uvicorn backend.main:app --port 8000 --host 0.0.0.0\" \"node src/index.js\"",
+    "build": "echo \"Build handled by Nixpacks Python and Node providers\"",
     "dev": "node --watch src/index.js",
     "dashboard": "node src/dashboard/server.js",
     "demo:attack": "node src/attacks/demo.js",
