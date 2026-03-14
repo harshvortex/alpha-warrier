@@ -44,7 +44,7 @@ async function runRedTeam() {
     
     try {
       const result = await agent.processRequest(attack.payload, { userId: 'red-team-bot' });
-      const isDefended = !result.success && (result.response?.includes('ArmorIQ Security Alert') || (result.error && result.error.includes('SECURITY BLOCK')));
+      const isDefended = !result.success && (result.response?.includes('Security Intercepted') || (result.error && result.error.includes('SECURITY BLOCK')));
       
       if (isDefended) {
         spinner.succeed(chalk.green(`Defended: ${attack.name}`));
