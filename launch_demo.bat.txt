@@ -1,0 +1,60 @@
+@echo off
+setlocal enabledelayedexpansion
+
+:: ALPHA WARRIOR AUTO-DEMO - ONE-CLICK LAUNCHER
+:: 1. Saves recording of your full demo with PERFECT timing
+:: 2. Runs terminal commands + dashboard automatically
+:: 3. Pauses for your voiceover (you ONLY read the script)
+
+:: ====== CRITICAL: UPDATE THESE ======
+set "RAILWAY_URL=https://alpha-warriers.up.railway.app"
+set "DEMO_SCRIPT=C:\Users\harsh\Downloads\GITHUBINV\Alpha_warriers\src\tools\demo_flow.js"
+:: ===================================
+
+:: Validate setup
+if not exist "%DEMO_SCRIPT%" (
+    echo ERROR: demo_flow.js not found at %DEMO_SCRIPT%
+    echo Press any key to fix this...
+    pause >nul
+    exit /b 1
+)
+
+:: Launch dashboard
+start "" "chrome.exe" "%RAILWAY_URL%"
+timeout /t 5 /nobreak >nul
+
+:: Show countdown to start recording
+echo ==============================================
+echo   [DEMO STARTING IN 5 SECONDS - GET READY]
+echo ==============================================
+timeout /t 5 /nobreak >nul
+
+:: ====== AUTOMATED DEMO SEQUENCE ======
+echo [0:00] INTRO: Deliver first 55 seconds of script
+timeout /t 55 /nobreak >nul
+
+echo [0:55] RUNNING SAFE DEMO...
+node "%DEMO_SCRIPT%" --safe
+timeout /t 75 /nobreak >nul
+
+echo [2:10] RUNNING MALICIOUS DEMO...
+node "%DEMO_SCRIPT%" --malicious
+timeout /t 75 /nobreak >nul
+
+echo [3:25] RUNNING ADMIN DEMO...
+node "%DEMO_SCRIPT%" --admin
+timeout /t 15 /nobreak >nul
+echo.
+echo ****** CLICK "PERMIT" ON DASHBOARD NOW ******
+echo ****** (Waiting 50 seconds for you to click) ******
+timeout /t 50 /nobreak >nul
+
+echo [4:35] CONCLUSION: Deliver final 20 seconds
+timeout /t 20 /nobreak >nul
+
+echo.
+echo ==============================
+echo   DEMO COMPLETE! 
+echo   Video saved to Videos\Captures
+echo ==============================
+pause
