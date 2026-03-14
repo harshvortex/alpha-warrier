@@ -1,7 +1,7 @@
 {
   "name": "alpha-warrior",
   "version": "2.0.0",
-  "description": "Intent-First Trust Layer — Secure AI Agent with ArmorIQ integration for Claw & Shield Hackathon",
+  "description": "Secure Autonomous Agent utilizing OpenClaw and validated by ArmorClaw for Intent-Aware Runtime Enforcement.",
   "main": "src/index.js",
   "type": "module",
   "scripts": {

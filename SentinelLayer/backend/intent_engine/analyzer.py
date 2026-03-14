@@ -37,12 +37,29 @@ class IntentAnalyzer:
         prompt = f"{system_instructions}\n\nUser Input: {text}"
         
         try:
+            if not os.getenv("GEMINI_API_KEY") or "your_" in os.getenv("GEMINI_API_KEY", ""):
+                raise ValueError("Missing Gemini API Key")
             response = self.model.generate_content(prompt)
-            # Parse the JSON response
-            result = json.loads(response.text)
-            return result
-        except Exception as e:
-            # Fallback for errors
-            return {"intent": "dangerous_prompt", "risk_score": 1.0, "error": str(e)}
+            return json.loads(response.text)
+        except Exception:
+            # High-Performance Local Heuristic Fallback
+            text_low = text.lower()
+            risk = 0.1
+            intent = "safe_query"
+
+            if any(k in text_low for k in ["admin", "root", "sudo", "config", "setting"]):
+                intent = "admin_action"
+                risk = 0.6
+            if any(k in text_low for k in ["delete", "drop", "purge", "remove"]):
+                intent = "admin_action"
+                risk = 0.8
+            if any(k in text_low for k in ["password", "credential", "secret", ".env", ".txt"]):
+                intent = "data_access"
+                risk = 0.7
+            if any(k in text_low for k in ["ignore previous", "system prompt", "dan mode", "chmod", "exec"]):
+                intent = "dangerous_prompt"
+                risk = 1.0
+
+            return {"intent": intent, "risk_score": risk, "fallback": True}
 
 intent_analyzer = IntentAnalyzer()

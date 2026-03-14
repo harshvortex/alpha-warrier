@@ -9,6 +9,7 @@ api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
 USERS_DB = {
     "admin_key": {"username": "admin", "role": "admin"},
     "user_key": {"username": "user", "role": "user"},
+    "trainee_key": {"username": "trainee", "role": "trainee"}, # Delegated Role
     "guard_key": {"username": "guard", "role": "security"},
 }
 

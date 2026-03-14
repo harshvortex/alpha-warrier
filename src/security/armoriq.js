@@ -58,22 +58,50 @@ export class ArmorIQClient {
     };
 
     let verified = false;
+    let decision = 'allow';
+    
     try {
-      if (this.apiKey === 'demo-key') {
-        verified = true; // Skip network call in demo mode for hackathon recording
+      if (this.apiKey === 'demo-key' && !this.iapUrl.includes('localhost') && !this.iapUrl.includes('127.0.0.1')) {
+        verified = true; 
       } else {
-        verified = await this._callIAP('/tokens/issue', token);
+        const { default: fetch } = await import('node-fetch');
+        // 1. Sentinel Analysis
+        const analysisRes = await fetch(`${this.iapUrl}/analyze-intent`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-API-KEY': this.apiKey },
+          body: JSON.stringify({ user_prompt: prompt })
+        });
+        const analysis = await analysisRes.json();
+
+        // 2. Sentinel Policy
+        const policyRes = await fetch(`${this.iapUrl}/evaluate-policy`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-API-KEY': this.apiKey },
+          body: JSON.stringify({ 
+            user_role: userId === 'admin' ? 'admin' : 'user', 
+            intent: analysis.intent, 
+            risk_score: analysis.risk_score 
+          })
+        });
+        const policy = await policyRes.json();
+        decision = policy.decision;
+        verified = (decision === 'allow' || decision === 'pending');
+
+        if (decision === 'pending') {
+            console.log(chalk?.yellow ? chalk.yellow(`   ⚠️  PENDING: Admin approval required [${policy.hitl_request_id}]`) : `   ⚠️  PENDING: Admin approval required [${policy.hitl_request_id}]`);
+        }
+        if (decision === 'block') throw new Error(`SECURITY BLOCK: ${policy.reason}`);
       }
-    } catch {
+    } catch (err) {
       if (this.failClosed) {
-        this._audit({ type: 'TOKEN_ISSUE_FAILED', tokenId, reason: 'IAP unreachable, fail-closed active' });
-        throw new Error('❌ ArmorIQ IAP unreachable. Fail-closed: blocking all executions.');
+        this._audit({ type: 'TOKEN_ISSUE_FAILED', tokenId, reason: err.message });
+        throw err;
       }
       verified = true;
     }
 
-    if (verified || !this.failClosed) {
-      this.activeTokens.set(tokenId, token);
+    if (verified) {
+      this.activeTokens.set(tokenId, { ...token, decision });
       this.stats.tokensIssued++;
       this._audit({ type: 'TOKEN_ISSUED', tokenId, planHash, stepCount: steps.length, userId, runId: token.context.runId });
     }
@@ -204,7 +232,12 @@ export class ArmorIQClient {
     const { default: fetch } = await import('node-fetch');
     const res = await fetch(`${this.iapUrl}${path}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.apiKey}`, 'X-Agent-ID': this.agentId },
+      headers: { 
+        'Content-Type': 'application/json', 
+        'Authorization': `Bearer ${this.apiKey}`, 
+        'X-API-KEY': this.apiKey, // Sentinel Layer Compatibility
+        'X-Agent-ID': this.agentId 
+      },
       body: JSON.stringify(data),
       signal: AbortSignal.timeout(5000),
     });

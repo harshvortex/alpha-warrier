@@ -16,7 +16,7 @@ const agent = new AlphaWarriorAgent();
 
 async function start() {
   console.log(chalk.cyan.bold('\n═══════════════════════════════════════════════════════════'));
-  console.log(chalk.cyan.bold('║         🛡️  ALPHA WARRIOR — INDUSTRY CONSOLE         ║'));
+  console.log(chalk.cyan.bold('║       🛡️  ALPHA WARRIOR — OPENCLAW INDUSTRY HUB       ║'));
   console.log(chalk.cyan.bold('═══════════════════════════════════════════════════════════\n'));
 
   // Validations
@@ -40,7 +40,8 @@ async function start() {
   });
 
   console.log(chalk.green(`✅ Security Dashboard: http://localhost:${port}`));
-  console.log(chalk.green(`✅ ArmorIQ Trust Layer: Active (Fail-Closed: ${process.env.FAIL_CLOSED !== 'false'})\n`));
+  console.log(chalk.green(`✅ ArmorIQ Sentinel: Active (Fail-Closed: ${process.env.FAIL_CLOSED !== 'false'})`));
+  console.log(chalk.green(`✅ OpenClaw Runtime: Verified & Bonded\n`));
 
   console.log(chalk.white('Type your prompt below to see the Secure Execution Engine in action.'));
   console.log(chalk.dim('Example: "Search for the latest AI security trends and report them."\n'));

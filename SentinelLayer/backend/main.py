@@ -11,7 +11,7 @@ from backend.policy_engine.engine import policy_engine
 from backend.tools.guard import tool_guard
 from backend.logger import log_security_event_db, get_logs_from_db, save_pending_approval, get_hitl_requests, update_hitl_status
 
-app = FastAPI(title="SentinelLayer API")
+app = FastAPI(title="Alpha Warrior: OpenClaw Sentinel")
 
 # Setup CORS for Dashboard Integration
 app.add_middleware(
@@ -130,7 +130,12 @@ async def security_logs(limit: int = 50, current_user: dict = Depends(get_curren
 
 @app.get("/")
 async def health_check():
-    return {"status": "SentinelLayer is operational", "version": "1.0.0"}
+    return {
+        "status": "SentinelLayer is operational", 
+        "engine": "Alpha Warrior v2.0",
+        "framework": "OpenClaw-Compatible",
+        "security": "ArmorIQ-Bonded"
+    }
 
 if __name__ == "__main__":
     import uvicorn
