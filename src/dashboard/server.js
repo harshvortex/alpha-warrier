@@ -5,6 +5,7 @@
 import express from 'express';
 import { createServer } from 'http';
 import { WebSocketServer } from 'ws';
+import fetch from 'node-fetch';
 
 export function createDashboard(agent, port = process.env.PORT || 3001) {
   const app = express();
@@ -19,6 +20,24 @@ export function createDashboard(agent, port = process.env.PORT || 3001) {
   app.get('/api/policies', (req, res) => res.json(agent.listPolicies()));
   app.post('/api/policy', (req, res) => { const id = agent.addPolicy(req.body); res.json({ id, success: true }); });
   app.delete('/api/policy/:id', (req, res) => { agent.removePolicy(req.params.id); res.json({ success: true }); });
+
+  app.get('/hitl/pending', async (req, res) => {
+    try {
+      const resp = await fetch('http://127.0.0.1:8000/hitl/pending', { headers: { 'X-API-KEY': req.headers['x-api-key'] || 'admin_key' } });
+      res.json(await resp.json());
+    } catch(err) { res.status(500).json([]); }
+  });
+
+  app.post('/hitl/decide/:id', async (req, res) => {
+    try {
+      const resp = await fetch('http://127.0.0.1:8000/hitl/decide/' + req.params.id, {
+        method: 'POST',
+        headers: { 'X-API-KEY': req.headers['x-api-key'] || 'admin_key', 'Content-Type': 'application/json' },
+        body: JSON.stringify(req.body)
+      });
+      res.json(await resp.json());
+    } catch(err) { res.status(500).json({ status: 'error' }); }
+  });
 
   wss.on('connection', (ws) => {
     ws.send(JSON.stringify({ type: 'init', stats: agent.getStats(), audit: agent.getAuditLog(20) }));
@@ -404,7 +423,8 @@ function getDashboardHTML() {
 </div>
 
 <script>
-    const ws = new WebSocket('ws://' + location.host);
+    const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+    const ws = new WebSocket(protocol + location.host);
     const feed = document.getElementById('audit-feed');
     const wsText = document.getElementById('ws-text');
     
@@ -442,7 +462,7 @@ function getDashboardHTML() {
 
     async function fetchHITL() {
         try {
-            const res = await fetch('http://localhost:8000/hitl/pending', { headers: { 'X-API-KEY': 'admin_key' } });
+            const res = await fetch('/hitl/pending', { headers: { 'X-API-KEY': 'admin_key' } });
             const list = await res.json();
             const hitlList = document.getElementById('hitl-list');
             const hitlEmpty = document.getElementById('hitl-empty');
@@ -465,7 +485,7 @@ function getDashboardHTML() {
     }
 
     async function decide(id, decision) {
-        await fetch('http://localhost:8000/hitl/decide/' + id, {
+        await fetch('/hitl/decide/' + id, {
             method: 'POST',
             headers: { 'X-API-KEY': 'admin_key', 'Content-Type': 'application/json' },
             body: JSON.stringify({ decision })
