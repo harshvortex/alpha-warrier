@@ -1,4 +1,14 @@
-# 🛡️ Alpha Warrior
+# 🛡️ Alpha Warrior: Secure Autonomous Core
+
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/new?repo=https://github.com/harshvortex/alpha-warrier)
+
+Secure Autonomous Agent utilizing OpenClaw and validated by ArmorClaw for Intent-Aware Runtime Enforcement.
+
+## 🚀 One-Click Deployment
+1. Click the button above.
+2. Add your `OPENAI_API_KEY` and `ARMORIQ_API_KEY` to the variables.
+3. Railway will build both the **Sentinel Plane** and **Execution Plane** automatically.
+
 ### Intent-First Trust Layer for Secure AI Agents
 
 **Alpha Warrior** is a security-hardened orchestration engine for AI agents. It mitigates prompt injection, privilege escalation, and data exfiltration by bonding agent plans with cryptographic intent tokens. Built for the **Claw & Shield Hackathon**.
