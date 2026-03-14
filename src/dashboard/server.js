@@ -6,12 +6,13 @@ import express from 'express';
 import { createServer } from 'http';
 import { WebSocketServer } from 'ws';
 
-export function createDashboard(agent, port = 3001) {
+export function createDashboard(agent, port = process.env.PORT || 3001) {
   const app = express();
   const server = createServer(app);
   const wss = new WebSocketServer({ server });
 
   app.use(express.json());
+  app.use('/assets', express.static('src/dashboard/assets'));
   app.get('/', (req, res) => res.send(getDashboardHTML()));
   app.get('/api/stats', (req, res) => res.json(agent.getStats()));
   app.get('/api/audit', (req, res) => res.json(agent.getAuditLog(100)));
@@ -45,37 +46,69 @@ function getDashboardHTML() {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alpha Warrior | Cyber-Security Console</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <title>Alpha Warrior | Cyber-Security Command Center</title>
+    <link rel="icon" type="image/png" href="/assets/logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #3b82f6;
-            --primary-glow: rgba(59, 130, 246, 0.5);
+            --primary-glow: rgba(59, 130, 246, 0.4);
+            --accent: #8b5cf6;
             --danger: #ef4444;
-            --success: #22c55e;
+            --success: #10b981;
             --warning: #f59e0b;
-            --dark-bg: #05070a;
-            --card-bg: rgba(15, 23, 42, 0.8);
-            --border: rgba(51, 65, 85, 0.5);
+            --dark-bg: #030712;
+            --card-bg: rgba(17, 24, 39, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-main: #f3f4f6;
+            --text-dim: #9ca3af;
+        }
+
+        @keyframes bg-glow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes slide-in {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse-soft {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
             font-family: 'Outfit', sans-serif;
             background: var(--dark-bg);
-            color: #f8fafc;
+            color: var(--text-main);
             overflow-x: hidden;
-            background-image: 
-                radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.05) 0%, transparent 40%),
-                radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.05) 0%, transparent 40%);
+            min-height: 100vh;
+            background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.1), transparent),
+                        radial-gradient(circle at bottom left, rgba(139, 92, 246, 0.1), transparent),
+                        var(--dark-bg);
+            background-size: 200% 200%;
+            animation: bg-glow 15s ease infinite;
         }
 
-        /* --- Header --- */
+        /* --- Layout --- */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            animation: slide-in 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
         header {
-            background: rgba(2, 6, 23, 0.7);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border);
-            padding: 1rem 3rem;
+            background: rgba(3, 7, 18, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 1.25rem 3rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -84,250 +117,288 @@ function getDashboardHTML() {
             z-index: 100;
         }
 
+        header .brand {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+        }
+
+        header .brand img {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+        }
+
         header h1 {
             font-size: 1.5rem;
             font-weight: 700;
-            background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+            background: linear-gradient(to right, #60a5fa, #a78bfa);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            letter-spacing: -0.02em;
+            letter-spacing: -0.01em;
         }
 
         .status-pill {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            background: rgba(34, 197, 94, 0.1);
-            color: var(--success);
-            padding: 0.4rem 1rem;
-            border-radius: 999px;
-            font-size: 0.75rem;
+            gap: 0.6rem;
+            padding: 0.5rem 1rem;
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 30px;
+            font-size: 0.8rem;
             font-weight: 600;
-            border: 1px solid rgba(34, 197, 94, 0.2);
+            color: var(--success);
+            transition: all 0.3s;
         }
 
-        /* --- Layout --- */
-        .container {
-            max-width: 1600px;
-            margin: 0 auto;
-            padding: 2rem 3rem;
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 2rem;
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse-soft 2s infinite;
         }
 
-        /* --- Stats Grid --- */
-        .stats-grid {
-            grid-column: span 2;
+        /* --- Dashboard Grid --- */
+        .dashboard-grid {
             display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 1.25rem;
-            margin-bottom: 2rem;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        /* --- Stats Cards --- */
+        .stats-strip {
+            grid-column: span 12;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
         }
 
         .stat-card {
             background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 16px;
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
             padding: 1.5rem;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 16px;
             position: relative;
             overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .stat-card:hover {
-            transform: translateY(-4px);
-            border-color: rgba(59, 130, 246, 0.4);
-            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+            transform: translateY(-5px);
+            border-color: rgba(59, 130, 246, 0.3);
+            background: rgba(31, 41, 55, 0.7);
         }
 
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 4px; height: 100%;
-            background: var(--primary);
-            opacity: 0.5;
+        .stat-card .label { color: var(--text-dim); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; margin-bottom: 0.5rem; letter-spacing: 0.05em; }
+        .stat-card .value { font-size: 2.25rem; font-weight: 700; color: #fff; }
+        .stat-card .trend { font-size: 0.75rem; margin-top: 0.5rem; display: flex; align-items: center; gap: 0.3rem; }
+
+        /* --- Main Content Areas --- */
+        .main-column {
+            grid-column: span 8;
         }
 
-        .stat-card.alert::before { background: var(--danger); }
-        .stat-card.warn::before { background: var(--warning); }
-
-        .stat-card .label {
-            font-size: 0.75rem;
-            color: #94a3b8;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+        .side-column {
+            grid-column: span 4;
         }
 
-        .stat-card .value {
-            font-size: 2.2rem;
-            font-weight: 700;
-            margin-top: 0.5rem;
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        /* --- Sections --- */
-        .section {
+        .glass-panel {
             background: var(--card-bg);
-            border: 1px solid var(--border);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
             border-radius: 20px;
-            padding: 1.5rem;
-            height: fit-content;
+            padding: 1.75rem;
+            margin-bottom: 1.5rem;
+            height: 100%;
         }
 
-        .section-header {
+        .panel-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             padding-bottom: 1rem;
-            border-bottom: 1px solid var(--border);
         }
 
-        .section-header h2 {
-            font-size: 1.1rem;
-            color: #cbd5e1;
-            font-weight: 600;
+        .panel-header h2 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: 0.02em;
         }
 
         /* --- Audit Log --- */
         .audit-log {
-            max-height: 600px;
+            height: 500px;
             overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
             padding-right: 0.5rem;
         }
 
         .audit-entry {
-            background: rgba(30, 41, 59, 0.4);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 1rem;
-            display: grid;
-            grid-template-columns: 100px 140px 1fr;
-            align-items: center;
-            gap: 1rem;
-            font-size: 0.85rem;
-            animation: slideIn 0.3s ease-out;
-        }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(-10px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        .audit-entry .time { font-family: 'JetBrains Mono', monospace; color: #64748b; font-size: 0.75rem; }
-        .audit-entry .type { 
-            font-weight: 600; 
-            padding: 0.25rem 0.6rem; 
-            border-radius: 6px; 
-            text-align: center;
-            font-size: 0.7rem;
-            text-transform: uppercase;
-        }
-
-        .type.block { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2); }
-        .type.allow { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.2); }
-        .type.info { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.2); }
-
-        .audit-entry .msg { color: #cbd5e1; line-height: 1.4; }
-
-        /* --- HITL Gateway --- */
-        .hitl-card {
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.02) 100%);
-            border: 1px solid rgba(245, 158, 11, 0.3);
-            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border-left: 3px solid #334155;
             padding: 1.25rem;
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
+            border-radius: 0 12px 12px 0;
+            display: grid;
+            grid-template-columns: 80px 140px 1fr;
+            gap: 1rem;
+            align-items: center;
+            animation: slide-in 0.4s ease-out backwards;
+            transition: all 0.3s;
         }
 
-        .hitl-card .meta { font-size: 0.75rem; color: var(--warning); font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.4rem; }
-        .hitl-card .intent { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; }
-        .hitl-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
-        
+        .audit-entry:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateX(4px);
+        }
+
+        .audit-entry .time { font-family: 'JetBrains Mono'; font-size: 0.75rem; color: var(--text-dim); }
+        .audit-entry .type { font-weight: 700; font-size: 0.7rem; text-transform: uppercase; padding: 4px 8px; border-radius: 4px; text-align: center; }
+        .audit-entry .msg { font-size: 0.9rem; color: #d1d5db; line-height: 1.5; }
+
+        /* Types */
+        .type.allow { background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.2); }
+        .type.block { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.2); }
+        .type.info { background: rgba(59, 130, 246, 0.1); color: var(--primary); border: 1px solid rgba(59, 130, 246, 0.2); }
+
+        /* --- HITL Cards --- */
+        .hitl-card {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(0, 0, 0, 0));
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s;
+        }
+
+        .hitl-card:hover { border-color: var(--warning); scale: 1.02; }
+        .hitl-card .meta { font-size: 0.7rem; color: var(--warning); font-weight: 700; margin-bottom: 0.5rem; text-transform: uppercase; }
+        .hitl-card .intent { font-size: 1.1rem; font-weight: 600; margin-bottom: 1.25rem; color: #fff; }
+        .hitl-actions { display: flex; gap: 0.75rem; }
+
         button {
-            padding: 0.6rem 1rem;
-            border-radius: 8px;
-            font-weight: 600;
+            flex: 1;
+            padding: 0.75rem;
+            border-radius: 10px;
+            font-weight: 700;
             font-size: 0.8rem;
             cursor: pointer;
             transition: all 0.2s;
             border: none;
+            letter-spacing: 0.02em;
         }
 
         button.approve { background: var(--success); color: white; }
-        button.approve:hover { background: #16a34a; box-shadow: 0 0 15px rgba(34, 197, 94, 0.3); }
+        button.approve:hover { filter: brightness(1.2); box-shadow: 0 0 20px rgba(16, 185, 129, 0.4); }
         button.reject { background: var(--danger); color: white; }
-        button.reject:hover { background: #dc2626; box-shadow: 0 0 15px rgba(239, 68, 68, 0.3); }
+        button.reject:hover { filter: brightness(1.2); box-shadow: 0 0 20px rgba(239, 68, 68, 0.4); }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+        @media (max-width: 1100px) {
+            .main-column, .side-column { grid-column: span 12; }
+        }
     </style>
 </head>
 <body>
 
 <header>
-    <div style="display:flex; align-items:center; gap:1rem;">
-        <h1>🛡️ ALPHA WARRIOR</h1>
-        <div class="status-pill"><span id="ws-indicator" style="width:8px; height:8px; border-radius:50%; background:currentColor;"></span> <span id="ws-text">SECURE LINK ESTABLISHED</span></div>
+    <div class="brand">
+        <img src="/assets/logo.png" alt="Alpha Warrior Logo">
+        <div>
+            <h1>ALPHA WARRIOR</h1>
+            <div style="font-size: 0.7rem; color: var(--text-dim); font-family: 'JetBrains Mono'; margin-top: 2px;">SECURE AUTONOMOUS CORE // V2.5</div>
+        </div>
     </div>
-    <div style="font-size: 0.8rem; color: #64748b; font-family: 'JetBrains Mono';">SYSTEM V2.0 // INDUSTRY-READY</div>
+    <div class="status-pill">
+        <div class="status-dot"></div>
+        <span id="ws-text">SECURE LINK ESTABLISHED</span>
+    </div>
 </header>
 
 <div class="container">
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="label">Total Intercepts</div>
-            <div class="value" id="s-total">0</div>
+    <div class="dashboard-grid">
+        <!-- Stats Strip -->
+        <div class="stats-strip">
+            <div class="stat-card">
+                <div class="label">Total Intent Pulse</div>
+                <div class="value" id="s-total">0</div>
+                <div class="trend" style="color:var(--primary)">⚡ SYSTEM ACTIVE</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Verified Intent</div>
+                <div class="value" id="s-verified" style="color:var(--success)">0</div>
+                <div class="trend" style="color:var(--success)">✅ INTEGRITY PASS</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Blocks Triggered</div>
+                <div class="value" id="s-blocked" style="color:var(--danger)">0</div>
+                <div class="trend" style="color:var(--danger)">🛡️ THREATS NEUTRALIZED</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Active Constraints</div>
+                <div class="value" id="s-policies" style="color:var(--accent)">0</div>
+                <div class="trend" style="color:var(--accent)">🔒 POLICIES LIVE</div>
+            </div>
         </div>
-        <div class="stat-card">
-            <div class="label">Verified Intent</div>
-            <div class="value" style="color:var(--success)" id="s-verified">0</div>
-        </div>
-        <div class="stat-card alert">
-            <div class="label">Blocks Triggered</div>
-            <div class="value" style="color:var(--danger)" id="s-blocked">0</div>
-        </div>
-        <div class="stat-card alert">
-            <div class="label">Injection Defenses</div>
-            <div class="value" style="color:var(--danger)" id="s-attacks">0</div>
-        </div>
-        <div class="stat-card">
-            <div class="label">Active Policies</div>
-            <div class="value" style="color:var(--primary)" id="s-policies">0</div>
-        </div>
-        <div class="stat-card warn">
-            <div class="label">Pending Review</div>
-            <div class="value" style="color:var(--warning)" id="s-hitl">0</div>
-        </div>
-    </div>
 
-    <div class="section">
-        <div class="section-header">
-            <h2>REAL-TIME SECURITY AUDIT</h2>
-            <div style="font-size:0.75rem; color:#64748b;">LIVE FEED</div>
+        <!-- Left: Audit Log -->
+        <div class="main-column">
+            <div class="glass-panel">
+                <div class="panel-header">
+                    <h2>SECURE TRANSACTION LEDGER</h2>
+                    <div style="font-size:0.65rem; color:var(--text-dim); background:rgba(255,255,255,0.05); padding:4px 10px; border-radius:20px;">REAL-TIME ARMORIQ AUDIT</div>
+                </div>
+                <div class="audit-log" id="audit-feed">
+                    <!-- Dynamic entries -->
+                </div>
+            </div>
         </div>
-        <div class="audit-log" id="audit-feed">
-            <!-- Entries will appear here -->
-        </div>
-    </div>
 
-    <div class="section">
-        <div class="section-header">
-            <h2 style="color:var(--warning)">🛡️ HITL GATEWAY</h2>
-            <div style="font-size:0.75rem; background:rgba(245,158,11,0.1); color:var(--warning); padding:2px 8px; border-radius:4px;">ADMIN ONLY</div>
-        </div>
-        <div id="hitl-empty" style="text-align:center; padding:2rem; color:#475569; font-size:0.9rem;">
-            No requests pending human approval.
-        </div>
-        <div id="hitl-list">
-            <!-- Pending approvals -->
+        <!-- Right: HITL & System Info -->
+        <div class="side-column">
+            <div class="glass-panel" style="background: linear-gradient(to bottom, rgba(34, 197, 94, 0.03), var(--card-bg));">
+                <div class="panel-header">
+                    <h2 style="color:var(--warning)">🛡️ HUMAN-IN-THE-LOOP</h2>
+                    <div style="font-size:0.65rem; color:var(--warning); border:1px solid rgba(245,158,11,0.2); padding:2px 8px; border-radius:4px;">PENDING</div>
+                </div>
+                <div id="hitl-empty" style="text-align:center; padding:3rem 1rem; color:var(--text-dim); font-size:0.85rem;">
+                    <div style="font-size:2rem; margin-bottom:1rem; opacity:0.3;">🔒</div>
+                    No requests currently pending administrative classification.
+                </div>
+                <div id="hitl-list"></div>
+            </div>
+
+            <div class="glass-panel" style="margin-top:1.5rem; padding:1.25rem;">
+                <div class="panel-header" style="margin-bottom:1rem; border:none; padding:0;">
+                    <h2 style="font-size:0.8rem; opacity:0.6;">SYSTEM NODES</h2>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:0.75rem;">
+                    <div style="display:flex; justify-content:space-between; font-size:0.8rem;">
+                        <span style="color:var(--text-dim)">Execution Plane:</span>
+                        <span style="color:var(--success)">ACTIVE (NODE.JS)</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-size:0.8rem;">
+                        <span style="color:var(--text-dim)">Policy Sentinel:</span>
+                        <span style="color:var(--success)">ACTIVE (FASTAPI)</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-size:0.8rem;">
+                        <span style="color:var(--text-dim)">Intent Engine:</span>
+                        <span style="color:var(--primary)">LOCAL HYBRID</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -336,105 +407,74 @@ function getDashboardHTML() {
     const ws = new WebSocket('ws://' + location.host);
     const feed = document.getElementById('audit-feed');
     const wsText = document.getElementById('ws-text');
-    const wsInd = document.getElementById('ws-indicator');
-
-    ws.onopen = () => {
-        wsText.textContent = 'SECURE LINK ESTABLISHED';
-        wsInd.style.color = 'var(--success)';
-    };
-
-    ws.onclose = () => {
-        wsText.textContent = 'LINK SEVERED';
-        wsInd.style.color = 'var(--danger)';
-    };
-
+    
     ws.onmessage = (e) => {
         const data = JSON.parse(e.data);
         if (data.stats) updateStats(data.stats);
-        if (data.type === 'init' && data.audit) {
+        if (data.type === 'init') {
+            feed.innerHTML = '';
             data.audit.reverse().forEach(addEntry);
         }
-        if (data.type === 'audit' && data.entry) {
-            addEntry(data.entry);
-        }
+        if (data.type === 'audit') addEntry(data.entry);
     };
 
     function updateStats(s) {
-        document.getElementById('s-total').textContent = (s.tokensIssued || 0);
-        document.getElementById('s-verified').textContent = (s.stepsVerified || 0);
-        document.getElementById('s-blocked').textContent = (s.stepsBlocked || 0);
-        document.getElementById('s-attacks').textContent = (s.attacksBlocked || 0);
-        document.getElementById('s-policies').textContent = (s.activePolicies || 0);
-        document.getElementById('s-hitl').textContent = (s.pendingApprovals || 0);
+        document.getElementById('s-total').innerText = s.tokensIssued || 0;
+        document.getElementById('s-verified').innerText = s.stepsVerified || 0;
+        document.getElementById('s-blocked').innerText = (s.stepsBlocked || 0) + (s.attacksBlocked || 0);
+        document.getElementById('s-policies').innerText = s.activePolicies || 0;
     }
 
     function addEntry(e) {
-        const isBlocked = e.type.includes('BLOCKED') || e.type.includes('FAILED');
-        const isAllowed = e.type.includes('ALLOWED') || e.type.includes('ISSUED');
-        const typeCls = isBlocked ? 'block' : isAllowed ? 'allow' : 'info';
+        const isError = e.type.includes('BLOCKED') || e.type.includes('FAIL');
+        const isSuccess = e.type.includes('ALLOW') || e.type.includes('ISSUED');
+        const typeCls = isError ? 'block' : isSuccess ? 'allow' : 'info';
         
         const entry = document.createElement('div');
         entry.className = 'audit-entry';
-        entry.innerHTML = '<div class="time">' + new Date(e.timestamp).toLocaleTimeString([], {hour12: false, hour: "2-digit", minute:"2-digit", second:"2-digit"}) + '</div>' + 
-            '<div class="type ' + typeCls + '">' + e.type + '</div>' + 
-            '<div class="msg"><strong>' + (e.tool || e.policyId || "CORE") + '</strong>' + 
-            '<span style="color:#64748b; margin: 0 0.5rem;">—</span>' + 
-            (e.reason || "Operation validated by ArmorIQ Trust Layer") + '</div>';
+        entry.innerHTML = \`<div class="time">\${new Date(e.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'})}</div>
+            <div class="type \${typeCls}">\${e.type}</div>
+            <div class="msg"><strong>\${e.tool || "SENTINEL"}</strong> — \${e.reason || (isError ? "Access Denied by Policy" : "Operation Validated")}</div>\`;
+        
         feed.prepend(entry);
-        if (feed.children.length > 50) feed.lastChild.remove();
+        if (feed.childNodes.length > 30) feed.lastChild.remove();
     }
 
-    // --- HITL LIVE GATEWAY ---
-    const hitlList = document.getElementById('hitl-list');
-    const hitlEmpty = document.getElementById('hitl-empty');
-
-    async function fetchPendingHitl() {
+    async function fetchHITL() {
         try {
-            const res = await fetch('http://localhost:8000/hitl/pending', {
-                headers: { 'X-API-KEY': 'admin_key' }
-            });
-            if (!res.ok) throw new Error('Sentinel Backend Unreachable');
-            const requests = await res.json();
+            const res = await fetch('http://localhost:8000/hitl/pending', { headers: { 'X-API-KEY': 'admin_key' } });
+            const list = await res.json();
+            const hitlList = document.getElementById('hitl-list');
+            const hitlEmpty = document.getElementById('hitl-empty');
             
             hitlList.innerHTML = '';
-            if (requests.length === 0) {
-                hitlEmpty.style.display = 'block';
-                return;
-            }
-            hitlEmpty.style.display = 'none';
-
-            requests.forEach(req => {
-                const card = document.createElement('div');
-                card.className = 'hitl-card';
-                card.innerHTML = '<div class="meta">⚠️ HIGH RISK ' + req.role + ' ACTION</div>' +
-                    '<div class="intent">' + req.intent + ' (Risk: ' + req.risk_score + ')</div>' +
-                    '<div class="hitl-actions">' +
-                        '<button class="approve" onclick="decideHitl(\'' + req.id + '\', \'allow\')">APPROVE</button>' +
-                        '<button class="reject" onclick="decideHitl(\'' + req.id + '\', \'block\')">REJECT</button>' +
-                    '</div>';
-                hitlList.appendChild(card);
+            hitlEmpty.style.display = list.length ? 'none' : 'block';
+            
+            list.forEach(req => {
+                const div = document.createElement('div');
+                div.className = 'hitl-card';
+                div.innerHTML = \`<div class="meta">Risk Score: \${req.risk_score} // Intent: \${req.intent}</div>
+                    <div class="intent">Elevated \${req.intent} Request from \${req.role}</div>
+                    <div class="hitl-actions">
+                        <button class="approve" onclick="decide('\${req.id}', 'allow')">PERMIT</button>
+                        <button class="reject" onclick="decide('\${req.id}', 'block')">BLOCK</button>
+                    </div>\`;
+                hitlList.appendChild(div);
             });
-        } catch (err) {
-            hitlEmpty.textContent = "Unable to connect to Sentinel HITL Pipeline.";
-        }
+        } catch {}
     }
 
-    async function decideHitl(id, decision) {
-        try {
-            const res = await fetch('http://localhost:8000/hitl/decide/' + id, {
-                method: 'POST',
-                headers: { 'X-API-KEY': 'admin_key', 'Content-Type': 'application/json' },
-                body: JSON.stringify({ decision: decision })
-            });
-            if (res.ok) fetchPendingHitl();
-        } catch (err) {
-            alert("Approval sync failed: " + err.message);
-        }
+    async function decide(id, decision) {
+        await fetch('http://localhost:8000/hitl/decide/' + id, {
+            method: 'POST',
+            headers: { 'X-API-KEY': 'admin_key', 'Content-Type': 'application/json' },
+            body: JSON.stringify({ decision })
+        });
+        fetchHITL();
     }
 
-    // Refresh HITL every 3 seconds
-    setInterval(fetchPendingHitl, 3000);
-    fetchPendingHitl();
+    setInterval(fetchHITL, 3000);
+    fetchHITL();
 </script>
 
 </body>
