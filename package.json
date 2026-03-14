@@ -6,8 +6,8 @@
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
-    "prod": "concurrently \"python3 -m uvicorn SentinelLayer.backend.main:app --port 8000 --host 0.0.0.0\" \"node src/index.js\"",
-    "build": "pip3 install -r requirements.txt",
+    "prod": "concurrently \"PYTHONPATH=./SentinelLayer python -m uvicorn backend.main:app --port 8000 --host 0.0.0.0\" \"node src/index.js\"",
+    "build": "python -m pip install -r requirements.txt",
     "dev": "node --watch src/index.js",
     "dashboard": "node src/dashboard/server.js",
     "demo:attack": "node src/attacks/demo.js",

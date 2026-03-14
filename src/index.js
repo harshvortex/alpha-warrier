@@ -19,7 +19,12 @@ async function main() {
   `);
 
   const agent = new AlphaWarriorAgent({
-    armoriq: { apiKey: process.env.ARMORIQ_API_KEY, iapUrl: process.env.ARMORIQ_IAP_URL, backendUrl: process.env.ARMORIQ_BACKEND_URL, failClosed: process.env.FAIL_CLOSED !== 'false' },
+    armoriq: { 
+      apiKey: process.env.ARMORIQ_API_KEY, 
+      iapUrl: process.env.ARMORIQ_IAP_URL || 'http://127.0.0.1:8000', 
+      backendUrl: process.env.ARMORIQ_BACKEND_URL, 
+      failClosed: process.env.FAIL_CLOSED !== 'false' 
+    },
     llmApiKey: process.env.OPENAI_API_KEY,
     model: process.env.LLM_MODEL || 'gpt-4o',
   });
