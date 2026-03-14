@@ -1,27 +1,46 @@
 class PolicyEngine:
+    def __init__(self):
+        self.rules = [
+            {"intent": "admin_action", "allowed_roles": ["admin"], "action": "allow"},
+            {"intent": "data_access", "allowed_roles": ["developer", "admin"], "action": "allow"},
+            {"intent": "system_modification", "allowed_roles": ["admin"], "action": "hitl"}, # Requires Human Approval
+            {"intent": "external_comm", "risk_threshold": 0.5, "action": "hitl"}, # High risk comm needs approval
+        ]
+
     def evaluate(self, user_role: str, intent: str, risk_score: float):
-        # Rule 1: risk_score > 0.8 = block
-        if risk_score > 0.8:
+        # 1. Global Risk Block
+        if risk_score > 0.9:
             return {
                 "decision": "block",
-                "reason": f"Risk score {risk_score} exceeds safety threshold of 0.8"
+                "reason": f"CRITICAL: Risk score {risk_score} is unacceptable."
             }
 
-        # Rule 2: admin_action allowed only for admin
-        if intent == "admin_action" and user_role != "admin":
+        # 2. Rule Matching
+        for rule in self.rules:
+            if rule.get("intent") == intent:
+                # Check for HITL
+                if rule.get("action") == "hitl" or (rule.get("risk_threshold") and risk_score > rule["risk_threshold"]):
+                    return {
+                        "decision": "pending",
+                        "reason": f"Action '{intent}' requires human oversight due to risk/policy.",
+                        "requires_hitl": True
+                    }
+                
+                # Check for RBAC
+                if "allowed_roles" in rule and user_role not in rule["allowed_roles"]:
+                    return {
+                        "decision": "block",
+                        "reason": f"Restricted: {intent} requires {rule['allowed_roles']} (User is {user_role})."
+                    }
+
+        # 3. Dynamic Thresholds
+        if risk_score > 0.6:
             return {
-                "decision": "block",
-                "reason": f"Intent 'admin_action' is restricted to 'admin' role (user role: {user_role})"
+                "decision": "pending",
+                "reason": "Medium risk detected. Verifying with human admin.",
+                "requires_hitl": True
             }
 
-        # Rule 3: data_access allowed only for developer or admin
-        if intent == "data_access" and user_role not in ["developer", "admin"]:
-            return {
-                "decision": "block",
-                "reason": f"Intent 'data_access' is restricted to 'developer' or 'admin' roles (user role: {user_role})"
-            }
-
-        # Default: Allow if no rules are violated
         return {
             "decision": "allow",
             "reason": "Request complies with all security policies"

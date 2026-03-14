@@ -22,6 +22,8 @@ Alpha Warrior splits the agent into three cryptographic phases:
 ## ✨ Key Features
 - **🛡️ 5-Layer Attack Protection**: Blocks Prompt Injection, PCI/PII Data Leaks, Privilege Escalation, Token Replay, and Plan Tampering.
 - **📊 Real-time Security Dashboard**: Live WebSocket-driven dashboard monitoring every intent token, verification, and blocked attack.
+- **🛡️ HITL Gateway**: Human-in-the-Loop governance for high-risk system modifications.
+- **📁 SIEM Auditing**: JSONL-formatted logs ready for Splunk, Datadog, or ELK integration.
 - **🔐 Fail-Closed Architecture**: If the security layer is unreachable, the agent shuts down rather than running insecurely.
 - **💬 Slack & Web Interface**: Control and monitor your agent from anywhere with built-in audit logs.
 

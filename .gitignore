@@ -6,3 +6,10 @@ dist/
 build/
 .vscode/
 .idea/
+__pycache__/
+*.pyc
+*.db
+security_logs.db
+database_simulation.json
+SentinelLayer/backend/logs/
+outbox.log

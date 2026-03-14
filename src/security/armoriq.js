@@ -147,7 +147,7 @@ export class ArmorIQClient {
   async _checkDataPolicy(tool, dataClasses, context) {
     for (const [, policy] of this.policies) {
       const toolMatch = policy.tool === '*' || policy.tool === tool;
-      const classMatch = dataClasses.includes(policy.dataClass);
+      const classMatch = policy.dataClass && dataClasses.includes(policy.dataClass);
       if (toolMatch && classMatch && policy.action === 'deny') {
         return { allowed: false, reason: `Policy [${policy.id}]: ${policy.dataClass} data blocked for ${tool}` };
       }

@@ -9,7 +9,9 @@
     "dev": "node --watch src/index.js",
     "dashboard": "node src/dashboard/server.js",
     "demo:attack": "node src/attacks/demo.js",
-    "test": "node src/tests/run.js"
+    "run:industry": "node src/industry_run.js",
+    "test": "node src/tests/run.js",
+    "test:security": "node src/tools/red_team.js"
   },
   "dependencies": {
     "@slack/bolt": "^3.18.0",
