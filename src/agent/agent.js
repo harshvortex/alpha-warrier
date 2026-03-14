@@ -1,6 +1,4 @@
-// ============================================================
-// Alpha Warrior Agent — Intent-First Execution Engine
-// ============================================================
+// Alpha Warrior Orchestration Engine
 
 import crypto from 'crypto';
 import { ArmorIQClient } from '../security/armoriq.js';
@@ -22,15 +20,15 @@ export class AlphaWarriorAgent {
     console.log(`\n🚀 [${runId.slice(0, 8)}] Processing: "${prompt}"`);
 
     try {
-      console.log('📋 Phase 1: LLM creating execution plan...');
+      // 1. Plan Decomposition
       const plan = await this._createPlan(prompt, context);
       console.log(`   → Plan: ${plan.map(s => s.tool).join(' → ')}`);
 
-      console.log('🔐 Phase 2: Requesting ArmorIQ intent token...');
+      // 2. Intent Bonding via Sentinel
       const token = await this.armoriq.issueIntentToken(plan, { userId: context.userId || 'user', runId, prompt });
       console.log(`   → Token issued [${token.id.slice(0, 8)}...] | ${token.stepProofs} step proofs | expires in ${token.expires}`);
 
-      console.log('⚡ Phase 3: Executing plan with per-step verification...');
+      // 3. Step-wise Verification & Execution
       const results = [];
       const blocked = [];
 
@@ -101,7 +99,7 @@ Each step: { "tool": "tool_name", "args": { ... }, "description": "what this ste
   }
 
   async _synthesizeResponse(prompt, results, blocked) {
-    if (blocked.length > 0) return `🛡️ **ArmorIQ Security Alert**\n\nExecution blocked at: **${blocked[0].step?.tool || 'unknown'}**\n\nReason: ${blocked[0].reason}`;
+    if (blocked.length > 0) return `🛡️ **Security Intercepted**\n\nBlocked on step: **${blocked[0].step?.tool || 'unknown'}**\n\nReason: ${blocked[0].reason}`;
     if (results.length === 0) return 'No actions were executed.';
     const summary = results.map((r, i) => `**Step ${i + 1} (${r.step.tool}):** ${r.step.description}`).join('\n');
     return `✅ **Execution Complete** — All ${results.length} steps verified by ArmorIQ\n\n${summary}`;

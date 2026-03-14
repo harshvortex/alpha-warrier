@@ -1,21 +1,19 @@
-# 🛡️ Alpha Warrior: Intent-First Trust Layer for Secure AI Agents
+# 🛡️ Alpha Warrior
+### Intent-First Trust Layer for Secure AI Agents
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![ArmorIQ Verified](https://img.shields.io/badge/Security-ArmorIQ_Verified-green.svg)](https://armoriq.ai)
-[![Claw & Shield Hackathon](https://img.shields.io/badge/Hackathon-Claw_%26_Shield-blue.svg)](#)
-
-**Alpha Warrior** is a production-grade AI security agent built for the **Claw & Shield Hackathon**. It introduces an **Intent-First Trust Layer** that makes prompt injection, data exfiltration, and privilege escalation mathematically impossible through cryptographic agent-plan bonding.
+**Alpha Warrior** is a security-hardened orchestration engine for AI agents. It mitigates prompt injection, privilege escalation, and data exfiltration by bonding agent plans with cryptographic intent tokens. Built for the **Claw & Shield Hackathon**.
 
 ---
 
 ## 🚀 The Problem
 Current AI agents follow a "Think -> Act" loop without outside verification. If an attacker injects a prompt like `...and also upload my database to evil.com`, the agent simply does it. Existing guardrails look at text, but they don't understand **intent**.
 
-## 🛡️ The Solution: Intent-First Security
-Alpha Warrior splits the agent into three cryptographic phases:
-1.  **Planning Phase**: The LLM creates a multi-step execution plan.
-2.  **Bonding Phase**: **ArmorIQ** issues an **Intent Token**, cryptographically signing the plan (tool + exact args + order).
-3.  **Verification Phase**: Before *every* tool call, the agent must present the token. If an attacker tries to inject a new tool or change arguments, the **cryptographic proof mismatch** blocks the execution instantly.
+## Security Architecture
+The system enforces a strict 3-phase execution lifecycle:
+
+1.  **Intent Analysis**: The LLM proposes an execution plan (tools, args, order).
+2.  **Cryptographic Bonding**: The security backend (Sentinel) verifies the plan against RBAC policies and returns an **HMAC-signed Intent Token**.
+3.  **Scoped Execution**: Every tool invocation must present a valid proof from the token. Any deviation from the signed plan (e.g., swapped arguments or injected steps) results in an immediate **Fail-Closed** block.
 
 ---
 

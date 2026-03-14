@@ -11,8 +11,9 @@ from backend.policy_engine.engine import policy_engine
 from backend.tools.guard import tool_guard
 from backend.logger import log_security_event_db, get_logs_from_db, save_pending_approval, get_hitl_requests, update_hitl_status
 
-app = FastAPI(title="SentinelLayer Security API")
+app = FastAPI(title="SentinelLayer API")
 
+# Setup CORS for Dashboard Integration
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
