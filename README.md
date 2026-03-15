@@ -1,9 +1,5 @@
 # 🛡️ Alpha Warrior: Secure Autonomous Core
 
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/new?repo=https://github.com/harshvortex/alpha-warrier)
-
-Secure Autonomous Agent utilizing OpenClaw and validated by ArmorClaw for Intent-Aware Runtime Enforcement.
-
 ## 🚀 One-Click Deployment
 1. Click the button above.
 2. Add your `OPENAI_API_KEY` and `ARMORIQ_API_KEY` to the variables.
@@ -88,6 +84,9 @@ Accessible at `http://localhost:3001`
 - **Monitoring**: Express, WebSocket, Chalk (Terminal Visuals)
 - **Tools**: Tavily Search, Slack Bolt SDK
 
+## 🔗 Deployed Links
+- **URL**: https://alpha-warrier-production.up.railway.app
+- 
 ---
 
 **Built by Harsh Vortex for the Claw & Shield Hackathon.**
